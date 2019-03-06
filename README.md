@@ -113,7 +113,7 @@ bash-5.0#
 docker ps
 CONTAINER ID    IMAGE   COMMAND     CREATED     STATUS      PORTS   NAMES
 ```
-- liste les conteneurs créés sur notre machine
+- liste les conteneurs créés sur notre machine (l'option `--all` permet de lister tous les conteneurs, par défaut uniquement les conteneurs actifs sont listés)
 - `CONTAINER ID` id unique du conteneur
 - `IMAGE` nom de l'image utilisée
 - `COMMAND` : commande utilisé au lancement du conteneur
@@ -127,7 +127,33 @@ CONTAINER ID    IMAGE   COMMAND     CREATED     STATUS      PORTS   NAMES
 
 - les IDs sont des identifiant hexadécimaux uniques nécessaires pour manipuler les **objets** Docker (Images, Conteneurs, etc...)
 - il est possible de faire de la complétion des commandes Docker avec `Tab`
-- `docker history` permet d'afficher la liste des couches composant une image
+- `docker history <image id>` permet d'afficher la liste des couches composant une image
+
 
 ## Préserver les données
 
+- lorsque l'on fait des modifications dans un conteneur, par exemple écrire dans un fichier, ces modifications sont perdues avec la destruction du conteneur. **Les modifications dans un conteneur sont TEMPORAIRES**
+- si on lance un conteneur sans l'option `--rm`, le conteneur ne sera pas détruit lorsqu'il aura fini de s'exécuter
+- **docker run crée toujours un nouveau conteneur**. Pour relancer un conteneur arrêté, il faut utiliser la commande `docker start -ai <nom-du-conteneur>`. `-ai` est l'équivalent de `-ti` de la commande `docker run`. Les modifications faites dans le conteneur avant son arrêt sont toujours présentes car le conteneur n'a pas été détruit
+- `docker stop` permet d'arrêter un conteneur de la même manière
+- si la machine hôte est redémarrée, le **docker engine** sera aussi redémarré, seul resteront les conteneurs lancés sans l'option `--rm`
+
+
+## Les volumes
+
+Toutes les couches d'un conteneur, issues de l'image sont en lectures seules. Une couche en lecture/écriture est ajoutée à la création sur laquelle le conteneur travaille. Cette couche est dans le conteneur, elle n'est donc pas accessible depuis la machine hôte à cause du principe de cloisement. On ne peut donc pas sauvegarder de manière pérenne des données dans cette couche car elle disparaîtra quand le conteneur sera détruit.
+
+La solution s'appelle **les volumes**. Un volume permet de monter un fichier ou un répertoire de la machine hôte directement dans un conteneur, ce qui permet d'écrire directement dans le système de fichiers de l'hôte et non plus dans la couche de travail du conteneur. Si le conteneur est supprimé, cela n'impacte pas les volumes car ils sont extérieurs au conteneur.
+
+```bash
+docker run -ti --rm -v $(pwd)/monFichier:/monFichier bash
+```
+- `-v cheminAbsoluSurHote:cheminAbsoluSurConteneur` permet de monter un volume sur le conteneur
+- `$(pwd)` correspond au chemin courant
+- en montant un volume, on récupère le contenu du fichier dans notre conteneur et les modifications faitent dans le conteneur seront conservées et donc accessibles en dehors du conteneur même quand celui-ci sera supprimé
+- il faut faire attention au point de montage sur le conteneur pour ne pas occulter l'ancien contenu du dossier, car un volume est prioritaire. Cela peut rendre le conteneur inutilisable
+- attention à ne pas monter dans le conteneur un dossier sensible de l'hôte. `/` donnerait une vue complète sur tout le système de fichiers de l'hôte
+- `:ro` permet de monter un volume en lecture seule : `-v cheminAbsoluSurHote:cheminAbsoluSurConteneur:ro`
+
+
+## Le réseau, partie 1
