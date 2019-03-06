@@ -11,7 +11,7 @@ Soit on installait toutes les applications sur un même ordinateur, soit on inst
 ### La machine virtuelle (VM)
 
 L'ordinateur qui accueille les VM est appelé hôte. Il contient un OS, des librairies et commandes, un **hyperviseur**.
-Les VM, comme elles s'apparentent à un ordinateur physique, doivent aussi avoir leur OS, leurs librairies et commandes, un ou plusieurs applications.
+Les VM, comme elles s'apparentent à un ordinateur physique, doivent aussi avoir leur OS, leurs librairies et commandes, une ou plusieurs applications.
 L'inconvénient est que les VM doivent avoir des ressources dédiées (CPU, RAM) et l'OS qui prend de l'espace disque.
 
 ### Les hyperviseurs
@@ -38,10 +38,10 @@ C'est une nouvelle solution de virtualisation. La machine hôte qui accueille le
 
 ![Schéma illustrant les différences entre une architecture avec VM vs Containers](vm-containers.png "Schéma illustrant les différences entre une architecture avec VM vs Containers")
 
-Dans un conteneur, contrairement au conteu des VM, il n'y a pas d'OS. Les conteneurs utilisent l'OS de la machine hôte. Un conteneur est simplement un processus de la machîne hôte. L'avantage par rapport à une architecture où l'on installe toutes ses applications sur la machine hôte est l'**isolation**. Le conteneur est isolé des autres processus tournant sur la machine hôte, sur lequel il n'a aucun accès.
+Dans un conteneur, contrairement au conteu des VM, il n'y a pas d'OS. Les conteneurs utilisent l'OS de la machine hôte. Un conteneur est simplement un processus de la machine hôte. L'avantage par rapport à une architecture où l'on installe toutes ses applications sur la machine hôte est l'**isolation**. Le conteneur est isolé des autres processus tournant sur la machine hôte, sur lequel il n'a aucun accès.
 
 Avantages des conteneurs :
-- consommation réduite de CPU, RAM et de disque : les ressources ne sont pas alloués comme pour les VM mais **les ressources sont partagées**. Il est quand même possible de mettre des limites de consommation aux conteneurs.
+- consommation réduite de CPU, RAM et de disque : les ressources ne sont pas allouées comme pour les VM mais **les ressources sont partagées**. Il est quand même possible de mettre des limites de consommation aux conteneurs
 - possibilité de déployer davantage de conteneurs que de VM sur une machine hôte
 - déploiement et démarrage très rapide
 
@@ -125,8 +125,8 @@ CONTAINER ID    IMAGE   COMMAND     CREATED     STATUS      PORTS   NAMES
 
 ## Les IDs et les raccourcis
 
-- les IDs sont sont identifiant hexadécimaux uniques nécessaires pour manipuler les **objets** Docker (Images, Conteneurs, etc...)
-- il y a possible de faire de la complétion des commandes Docker avec `Tab`
+- les IDs sont des identifiant hexadécimaux uniques nécessaires pour manipuler les **objets** Docker (Images, Conteneurs, etc...)
+- il est possible de faire de la complétion des commandes Docker avec `Tab`
 - `docker history` permet d'afficher la liste des couches composant une image
 
 ## Préserver les données
