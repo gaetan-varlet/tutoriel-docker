@@ -179,3 +179,74 @@ Ce n'est pas obligatoire de mapper les mêmes numéros de ports des deux côtés
 Il est possible de faire le mapping sans spécifier le port de l'hôte, dans ce cas c'est l'hôte qui va choisir quel port il met à disposition et chercher quel port a été choisi : `docker run --rm -p 80 nginx`. Avec la commande `docker ps` ou `docker inspect <nom-conteneur>`, on retrouve les ports utilisés.
 
 Il est possible d'inspecter une image pour regarder si elle expose des ports et quels sont leur numéro : `docker inspect nginx` nous permet de savoir que nginx ouvre le port 80.
+
+
+## Détacher, attacher
+
+`-ti` permet de s'attacher à un conteneur dès son lancement quand on le crée. Généralement, on n'a pas besoin de s'y attacher à son lancement, comme dans le cas d'un serveur web, on le laisse vivre en autonomie.
+Si on souhaite lancer un conteneur en mode détaché, il faut utilisé l'option `-d`, et on récupère aussitôt la main avec le conteneur qui tourne toujours.
+
+```bash
+docker run -d -p 80:80 nginx
+```
+
+Pour se rattacher au conteneur, il faut utiliser la commande `docker attach <id ou nom conteneur>`. En faisant `Ctrl+C`, le conteneur est arrêté. Pour se détacher d'un conteneur sans l'arrêter, il faut avoir ajouter un `-ti` au lancement même si on le lance en mode détaché :
+```bash
+# création d'un conteneur en mode détaché, on récupère donc immédiatement la main
+docker run -ti -d -p 80:80 nginx
+# attachement au conteneur avec son id
+docker attach f4d
+# il faut ensuite taper Ctrl+P puis Ctrl+Q pour se détacher sans arrêter le conteneur
+```
+
+`docker logs <id ou nom conteneur>` permet d'afficher les logs d'un conteneur puis rend la main. L'option `-f` (pour *follow*) permet de suivre les logs sans rendre la main et ainsi voir les nouvelles lignes dans le fichier.
+
+
+## Créer une image Docker
+
+```bash
+# récupération de l'image PHP puis on se retrouve dans le conteneur en ligne de commande PHP
+docker run -ti php
+# docker exec permet de rentrer dans le conteneur déjà actif avec un bash
+docker exec -ti 78493 bash # 78493 est l'id du conteneur
+# installation d'une extension à PHP
+docker-php-ext-install soap
+# erreur, il manque une bibliothèque, on va don l'installer
+apt-get update
+apt-get install libxml2-dev
+# une fois la lib installée, réinstallation de soap
+docker-php-ext-install soap
+# récupération d'un interpréteur de commandes PHP
+php -a
+new SoapClient('URL')
+```
+
+Si on supprime le conteneur, tout est perdu. On va donc créer une image qui fait tout cela. C'est une *recette de cuisine* écrite dans un fichier nommé **Dockerfile** par convention.
+
+```bash
+FROM php:7.0.31-cli # un dockerfile commence toujours par FROM pour dire l'image de base que l'on va utiliser
+RUN apt-get update # RUN permet de dire que l'on va exécuter une commande
+RUN apt-get install -y libxml2-dev # -y permet de répondre automatiquement yes à toutes les questions
+RUN docker-php-ext-install soap
+```
+
+Construction d'une image à partir d'un dockerfile :
+- avec la commande `build`
+- `-t` donne un tag (version) à l'image (nom:tag)
+- chemin du dockerfile (. s'il est dans répertoire courant et qu'il s'appelle Dockerfile ; sinon ajout de `-f nomDockerfile`)
+
+```bash
+# création de l'image
+docker build -t php_soap:7.0.31 .
+# vérification si l'image est bien dans le cash
+docker images
+# création d'un conteneur de notre image
+docker run -ti php_soap:7.0.31
+```
+
+Pour mettre à jour notre image en changeant par exemple la version de l'image de base que l'on utilise, il faut :
+- modifier le dockerfile `FROM php:7.2.8-cli`
+- regénérer une nouvelle image : `docker build -t php_soap:7.2.8 .`
+
+
+## Le réseau, partie 2
