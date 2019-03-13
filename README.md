@@ -204,6 +204,8 @@ docker attach f4d
 
 ## Créer une image Docker
 
+Création d'une image Docker à partir d'une image PHP à laquelle on va ajouter une extension :
+
 ```bash
 # récupération de l'image PHP puis on se retrouve dans le conteneur en ligne de commande PHP
 docker run -ti php
@@ -250,3 +252,39 @@ Pour mettre à jour notre image en changeant par exemple la version de l'image d
 
 
 ## Le réseau, partie 2
+
+Docker offre différents pilotes (*drivers*) de réseaux :
+- 5 pilotes natifs
+- d'autres utilisables sous forme de plugin
+
+Pour spécifier un type de réseau, il faut ajouter dans une commande Docker `--network <type>`.
+
+Les pilotes natifs :
+- `none` : absence total de réseau au conteneur
+    - exemple : `docker run -ti --rm --network none bash`
+    - le conteneur est isoé
+- `bridge` : pilote par défaut quand rien n'est précisé
+    - bon compromis pour l'isolation des conteneurs tout en offrant une connectivité aux conteneurs
+    - si on lance 2 conteneurs avec la commande `docker run -ti --rm bash`, ils peuvent se voir et communiquer, ainsi que l'hôte peut aussi les voir car il est lui aussi sur le bridge par défaut
+    - le pilote bridge peut êter **clôné**, c'est-à-dire créer d'autres bridges fonctionnant sur le même principe. Seul les conteneurs utilisant ce bridge clôné peuvent se voir
+    - création d'un bridge clôné : `docker network create --driver=bridge mon_bridge`
+    - créaton de 2 conteneurs en utilisant ce bridge : `docker run -ti --rm --network==mon_bridge bash`. Les 2 conteneurs peuvent toujours communiquer entre-eux car ils sont sur le même réseau mais l'hôte ne peut plus les voir car il n'est pas sur le même réseau
+    - lorsque'un crée un réseau bridge, une plage d'adresse IP lui est effecté. Docker gère un DNS interne, uniquement pour les réseaux bridges clônés. Les conteneurs sont accessibles par leur adresse IP et donc aussi par leur nom
+    - les bridges clônés peuvent être connectés/déconnectés dynamiquement des conteneurs déjà actifs. `docker network connect mon_bridge srv2` permet de rattacher le conteneur srv2 au bridge *mon_bridge*
+- `host` : permet à un conteneur de partager la même réseau que l'hôte. En bridge, lorsqu'on ouvre un port sur un conteneur, il n'est pas ouvert sur l'hôte par défaut, il faut mapper un port du conteneur avec un port de l'hôte. Avec le pilote *host*, ouvrir un port sur le conteneur revient à ouvrir ce port sur l'hôte. Il n'y a plus d'isolation sur le réseau
+    - pilote assez peu courant, qui peut servir dans certains cas
+    - va un peu à l'encontre du principe d'isolation de Docker
+- `overlay` permet de connecter entre-eux des conteneurs qui tournent sur des hôtes différents
+- `macvlan` usage spécifique et peu courant
+
+La commande **network** :
+- `network create` permet de créer un pilote
+- `network ls` permet de lister les réseaux
+- `network rm` permet de supprimer un réseau (les réseaux natifs ne peuvent pas être supprimés)
+
+
+TODO : vérifier qu'en bridge clôné, l'hôte ne peut plus voir les conteneurs car ils sont sur un bridge clôné alors que l'hôte est sur le bridge par défaut
+
+
+## Les volmues, partie 2
+
