@@ -235,7 +235,7 @@ RUN docker-php-ext-install soap
 Construction d'une image à partir d'un dockerfile :
 - avec la commande `build`
 - `-t` donne un tag (version) à l'image (nom:tag)
-- chemin du dockerfile (. s'il est dans répertoire courant et qu'il s'appelle Dockerfile ; sinon ajout de `-f nomDockerfile`)
+- chemin du dockerfile (. s'il est dans répertoire courant et qu'il s'appelle Dockerfile, sinon ajout de `-f nomDockerfile`)
 
 ```bash
 # création de l'image
@@ -288,3 +288,44 @@ TODO : vérifier qu'en bridge clôné, l'hôte ne peut plus voir les conteneurs 
 
 ## Les volmues, partie 2
 
+Pour mapper un volume (fichier ou dossier) entre l'entre et le conteneur, on utilise la commande `-v cheminAbsoluSurHote:cheminAbsoluSurConteneur`. Cela masque ce qu'il y a sur le conteneur avec ce qu'il y a sur l'hôte en cas de conflit ed nom. On parle de **volumes mappés**.
+
+Il existe aussi un autre type de volume : les **volumes managés**. Docker a la main dessus, alors que les volumes mappés sont entre les mains de l'OS. Les performances sont les mêmes.
+- il faut d'abord créer le volume : `docker volume create mes_donnees`
+- pour voir les volumes, il faut faire `docker volume ls`
+- pour voir où sont stockés les volumes managés, il faut utiliser la commande `docker volume inspect mes_donnees`. On voit que les volumes sont dans l'espace de travail de docker (/var/lib/docker/volumes...)
+- pour monter le volume managé, il faut renseigner le nom du volume managé au lieu du chemin absolu du volume mappé : `docker run --rm -ti -v mes_donnees:/src bash`
+- concernant le masquage des fichiers et dossiers déjà présent dans le conteneur, le comportement est légèrement différent avec les volumes managés : lorsqu'on monte un **volume managé vide**, le dossier de montage du conteneur est transféré dans le volume managé. Le contenu du volume managé peut être lu depuis l'hôte ou le conteneur, de manière persistance au conteneur
+
+
+## Docker Compose
+
+Docker Compose est un **chef de cuisine** qui permet d'écrire des recettes qu'il va exécuter, et créer des environnements multi-conteneurs communiquant entre-eux (par exemple, une BDD et un serveur web).
+
+Exemple avec Wordpress où il faut un conteneur **wordpress** + un conteneur **mysql**.
+
+Docker Compose utilise un fichier de configuration qui se nomme **docker-compose.yml**
+
+```yml
+version: "3" # version de Docker Compose
+services: # liste des conteneurs dont on a besoin
+    db:
+        image: mysql:5.7
+        environnement: # il faut définir certains paramètres à la construction du conteneur
+            - MYSQL_ROOT_PASSWORD=toto
+            - MYSQL_DATEBASE=mabase
+            - MYSQL_USER=gaetan
+            - MYSQL_PASSWORD=varlet
+    wordpress:
+        image: wordpress:4.9 # image source que l'on va utiliser
+        ports:
+            - 80:80 # liste des ports que l'on veut mapper
+        environnement:
+            - WORDPRESS_DB_HOST=db # nom du conteneur contenant mysql
+            - WORDPRESS_DB_USER=gaetan
+            - WORDPRESS_DB_PASSWORD=varlet
+            - WORDPRESS_DB_NAME=mabase
+volumes:
+networks:
+    monreseaubridge:
+```
