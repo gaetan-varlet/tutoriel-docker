@@ -380,3 +380,5 @@ networks:
 ```
 
 ## Portainer
+
+Portainer est une interface web permettant de piloter graphiquement les conteneurs d'un ou plusieurs hôtes. Il est possible d'installer un image docker de portainer, et de faire des tâches d'administration via Portainer pour ne pas les faire en ligne de commande.
