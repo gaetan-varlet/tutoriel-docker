@@ -316,6 +316,10 @@ services: # liste des conteneurs dont on a besoin
             - MYSQL_DATEBASE=mabase
             - MYSQL_USER=gaetan
             - MYSQL_PASSWORD=varlet
+        networks:
+            - monreseaubridge
+        volumes:
+            - ./data/db:/var/lib/mysql
     wordpress:
         image: wordpress:4.9 # image source que l'on va utiliser
         ports:
@@ -325,7 +329,54 @@ services: # liste des conteneurs dont on a besoin
             - WORDPRESS_DB_USER=gaetan
             - WORDPRESS_DB_PASSWORD=varlet
             - WORDPRESS_DB_NAME=mabase
-volumes:
+        networks:
+            - monreseaubridge
+        volumes:
+            - ./data/wp:var/www/html
+networks: # configuration du réseau pour que nos conteneurs communiquent entre-eux
+    monreseaubridge: # création d'un réseau bridgé clôné
+```
+
+Pour construire l'environnemnt, il faut exécuter la commande `docker-compose up`. Il ne nous rend pas la main et affiche les logs. `Ctrl+C` permet d'arrêter tous les conteneurs et de récupérer la main.
+- pour lancer doker-compose en tâche de fond et récupérer la main, il va falloir mettre `-d`
+- pour accéder aux logs, il faut faire `docker-compose logs -f`, `Ctrl+C` quitte les logs mais n'arrête pas l'environnement
+- `docker-compose stop` permet d'arrêter l'environnement sans supprimer les conteneurs
+- `docker compose start` permet de redémarrer les conteneurs
+- `docker compose down` permet de supprimer un environnement. Tout est supprimé sauf les volumes. Ajouter `-v` permet de supprimer également les volumes
+
+On peut refaire un fichier **docker-compose.yml** non plus avec des volumes mappés mais avec des **volumes managés** :
+```yml
+version: "3"
+services:
+    db:
+        image: mysql:5.7
+        environnement:
+            - MYSQL_ROOT_PASSWORD=toto
+            - MYSQL_DATEBASE=mabase
+            - MYSQL_USER=gaetan
+            - MYSQL_PASSWORD=varlet
+        networks:
+            - monreseaubridge
+        volumes:
+            - db:/var/lib/mysql # utilisation du volumes db déclaré en dessous
+    wordpress:
+        image: wordpress:4.9
+        ports:
+            - 80:80
+        environnement:
+            - WORDPRESS_DB_HOST=db
+            - WORDPRESS_DB_USER=gaetan
+            - WORDPRESS_DB_PASSWORD=varlet
+            - WORDPRESS_DB_NAME=mabase
+        networks:
+            - monreseaubridge
+        volumes:
+            - wp:var/www/html # utilisation du volumes wp déclaré en dessous
+volumes: # création d'une partie volumes pour faire des volumes managés
+    db:
+    wp:
 networks:
     monreseaubridge:
 ```
+
+## Portainer
