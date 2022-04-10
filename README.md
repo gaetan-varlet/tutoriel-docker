@@ -286,7 +286,7 @@ La commande **network** :
 TODO : vérifier qu'en bridge clôné, l'hôte ne peut plus voir les conteneurs car ils sont sur un bridge clôné alors que l'hôte est sur le bridge par défaut
 
 
-## Les volmues, partie 2
+## Les volumes, partie 2
 
 Pour mapper un volume (fichier ou dossier) entre l'entre et le conteneur, on utilise la commande `-v cheminAbsoluSurHote:cheminAbsoluSurConteneur`. Cela masque ce qu'il y a sur le conteneur avec ce qu'il y a sur l'hôte en cas de conflit ed nom. On parle de **volumes mappés**.
 
